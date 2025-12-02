@@ -2,30 +2,36 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>PB VelocityBoard 4.0</title>
+<title>PB VelocityBoard 4.1</title>
 
-<!-- Chart.js (future expansion) -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<!-- Confetti -->
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
 <style>
 /* --------------------------------------------------
-   GLOBAL THEME
+   GLOBAL THEME + BACKGROUND IMAGE
 -------------------------------------------------- */
 body {
     margin: 0;
     font-family: "Segoe UI", sans-serif;
-    background: #021f4f;        /* Royal Blue */
+    background: url('https://raw.githubusercontent.com/MandeepKourSardarni/PB-VelocityBoard/main/IMAGE.jpg') 
+                no-repeat center center fixed;
+    background-size: cover;
     color: white;
     overflow-x: hidden;
+}
+
+.overlay {
+    position: fixed;
+    top:0; left:0; width:100%; height:100%;
+    background: rgba(0,0,0,0.55);
+    z-index: -1;
 }
 
 /* Headings */
 h2 {
     margin: 15px;
-    color: #2ee7e7; /* Teal */
+    color: #2ee7e7;
     font-size: 20px;
 }
 
@@ -43,9 +49,9 @@ button:hover {
     background: #57f1f1;
 }
 
-/* --------------------------------------------------
-   ATHLETE SETUP SCREEN
--------------------------------------------------- */
+/* ============================================================
+   ATHLETE SETUP
+============================================================ */
 #athleteSetup {
     text-align: center;
     padding: 40px 20px;
@@ -57,30 +63,28 @@ button:hover {
     margin: 10px 0;
     border-radius: 8px;
     border: 1px solid #2ee7e7;
-    background: #053067;
+    background: rgba(0,0,0,0.45);
     color: white;
     font-size: 16px;
 }
 
-/* Hide main content until athlete is set */
 #mainApp { display: none; }
 
-/* --------------------------------------------------
-   HEADER (NAME + AGE)
--------------------------------------------------- */
+/* ============================================================
+   HEADER BAR
+============================================================ */
 #headerBar {
     text-align: center;
     padding: 20px 10px;
-    background: #032862;
+    background: rgba(0,0,0,0.45);
     font-size: 18px;
     color: #2ee7e7;
     font-weight: bold;
-    letter-spacing: 1px;
 }
 
-/* --------------------------------------------------
-   PB TILES (OPTION 1 STYLE)
--------------------------------------------------- */
+/* ============================================================
+   PB TILES
+============================================================ */
 #pbTiles {
     margin: 10px;
     display: grid;
@@ -89,7 +93,7 @@ button:hover {
 }
 
 .pbTile {
-    background: #053067;
+    background: rgba(0,0,0,0.45);
     padding: 12px;
     border-radius: 12px;
     text-align: center;
@@ -112,31 +116,33 @@ button:hover {
     opacity: 0.8;
 }
 
-/* --------------------------------------------------
-   ADD ENTRY BUTTON
--------------------------------------------------- */
-#addEntryBtn {
-    width: calc(100% - 30px);
-    margin: 20px 15px;
-    padding: 14px;
-    font-size: 16px;
-    border-radius: 10px;
+/* ============================================================
+   CONTROL BUTTONS UNDER PB TILES
+============================================================ */
+#controlButtons {
+    text-align: center;
+    margin: 15px;
 }
 
-/* --------------------------------------------------
+#controlButtons button {
+    margin: 5px;
+    padding: 10px 15px;
+}
+
+/* ============================================================
    ENTRY CARDS
--------------------------------------------------- */
+============================================================ */
 .entryCard {
-    background: #04204f;
+    background: rgba(0,0,0,0.45);
     padding: 15px;
     margin: 12px;
     border-radius: 10px;
     border-left: 4px solid #2ee7e7;
 }
 
-/* --------------------------------------------------
+/* ============================================================
    POP-UP MODAL
--------------------------------------------------- */
+============================================================ */
 #entryModal {
     display: none;
     position: fixed;
@@ -155,7 +161,6 @@ button:hover {
     border-radius: 12px;
 }
 
-/* Two-column grid */
 .modalGrid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -181,9 +186,11 @@ button:hover {
 </head>
 <body>
 
-<!-- --------------------------------------------------
+<div class="overlay"></div>
+
+<!-- =======================================================
      ATHLETE SETUP
--------------------------------------------------- -->
+======================================================= -->
 <div id="athleteSetup">
     <h2>Enter Athlete Details</h2>
     <input id="athName" placeholder="Athlete Name">
@@ -192,15 +199,13 @@ button:hover {
     <button onclick="saveAthlete()">Save & Continue</button>
 </div>
 
-<!-- --------------------------------------------------
+<!-- =======================================================
      MAIN APPLICATION
--------------------------------------------------- -->
+======================================================= -->
 <div id="mainApp">
 
-    <!-- HEADER -->
     <div id="headerBar"></div>
 
-    <!-- PB TILES -->
     <h2>Personal Bests</h2>
     <div id="pbTiles">
         <div class="pbTile" id="pb400"><div class="distance">400m</div><div class="time">--</div><div class="meta"></div></div>
@@ -211,54 +216,36 @@ button:hover {
         <div class="pbTile" id="pb1500"><div class="distance">1500m</div><div class="time">--</div><div class="meta"></div></div>
     </div>
 
-    <!-- ADD ENTRY -->
-    <button id="addEntryBtn" onclick="openEntryModal()">+ Add Entry</button>
+    <!-- BUTTONS UNDER PB TILES -->
+    <div id="controlButtons">
+        <button onclick="openEntryModal()">+ Add Entry</button>
+        <button onclick="undoLastEntry()">Undo Last</button>
+        <button onclick="resetAll()">Reset All</button>
+    </div>
 
-    <!-- ENTRY LIST -->
     <div id="entryList"></div>
-
 </div>
 
-<!-- --------------------------------------------------
-     ENTRY MODAL
--------------------------------------------------- -->
+<!-- =======================================================
+     ADD ENTRY MODAL
+======================================================= -->
 <div id="entryModal">
     <div id="modalBox">
         <h2>Add Race Entry</h2>
 
         <label>Location</label>
-        <input id="entryLocation" />
+        <input id="entryLocation">
 
-        <label style="margin-top:10px;">Date</label>
-        <input id="entryDate" type="date" />
+        <label>Date</label>
+        <input id="entryDate" type="date">
 
         <div class="modalGrid">
-            <div>
-                <label>400m</label>
-                <input id="t400">
-            </div>
-            <div>
-                <label>500m</label>
-                <input id="t500">
-            </div>
-
-            <div>
-                <label>800m</label>
-                <input id="t800">
-            </div>
-            <div>
-                <label>1000m</label>
-                <input id="t1000">
-            </div>
-
-            <div>
-                <label>1200m</label>
-                <input id="t1200">
-            </div>
-            <div>
-                <label>1500m</label>
-                <input id="t1500">
-            </div>
+            <div><label>400m</label><input id="t400"></div>
+            <div><label>500m</label><input id="t500"></div>
+            <div><label>800m</label><input id="t800"></div>
+            <div><label>1000m</label><input id="t1000"></div>
+            <div><label>1200m</label><input id="t1200"></div>
+            <div><label>1500m</label><input id="t1500"></div>
         </div>
 
         <div class="modalActions">
@@ -270,124 +257,92 @@ button:hover {
 </div>
 
 <script>
-/* =======================================================
-   GLOBAL VARIABLES
-======================================================= */
 let entries = [];
 const dists = [400,500,800,1000,1200,1500];
 
-/* =======================================================
-   ATHLETE SETUP
-======================================================= */
-function saveAthlete() {
-    let name = athName.value.trim();
-    let age = athAge.value.trim();
+/* --------------------------------------------------
+   ATHLETE SYSTEM
+-------------------------------------------------- */
+function saveAthlete(){
+    let n = athName.value.trim();
+    let a = athAge.value.trim();
+    if(!n || !a){ alert("Enter both fields"); return; }
 
-    if (!name || !age) {
-        alert("Enter both name and age.");
-        return;
-    }
-
-    localStorage.setItem("pbName", name);
-    localStorage.setItem("pbAge", age);
-
+    localStorage.setItem("athName", n);
+    localStorage.setItem("athAge", a);
     loadAthlete();
 }
 
-function loadAthlete() {
-    let name = localStorage.getItem("pbName");
-    let age = localStorage.getItem("pbAge");
+function loadAthlete(){
+    let n = localStorage.getItem("athName");
+    let a = localStorage.getItem("athAge");
 
-    if (name) {
+    if(n){
         athleteSetup.style.display = "none";
         mainApp.style.display = "block";
-        headerBar.innerHTML = `${name} — Age ${age}`;
+        headerBar.innerHTML = `${n} — Age ${a}`;
     }
 }
-
 loadAthlete();
 
-/* =======================================================
-   MODAL OPEN/CLOSE
-======================================================= */
-function openEntryModal() {
-    entryModal.style.display = "flex";
-}
+/* --------------------------------------------------
+   MODAL
+-------------------------------------------------- */
+function openEntryModal(){ entryModal.style.display = "flex"; }
+function closeEntryModal(){ entryModal.style.display = "none"; }
 
-function closeEntryModal() {
-    entryModal.style.display = "none";
-}
-
-/* =======================================================
+/* --------------------------------------------------
    SAVE ENTRY
-======================================================= */
-function saveEntry() {
+-------------------------------------------------- */
+function saveEntry(){
     let loc = entryLocation.value.trim();
-    let date = entryDate.value;
-    if (!loc || !date) { alert("Location and date required."); return; }
+    let date = entryDate.value.trim();
+    if(!loc || !date){ alert("Enter location & date"); return; }
 
-    let entry = {
-        location: loc,
-        date: date,
-        times: {}
-    };
+    let e = { location:loc, date:date, times:{} };
 
-    dists.forEach(d => {
+    dists.forEach(d=>{
         let v = document.getElementById("t"+d).value.trim();
-        entry.times[d] = v ? parseFloat(v) : null;
+        e.times[d] = v ? parseFloat(v) : null;
     });
 
-    entries.push(entry);
+    entries.push(e);
     updatePBs();
     renderEntries();
     closeEntryModal();
 }
 
-/* =======================================================
-   PB UPDATE
-======================================================= */
-function updatePBs() {
-    dists.forEach(d => {
-        let best = Infinity;
-        let bestMeta = "";
-
-        entries.forEach(e => {
-            if (e.times[d] !== null && e.times[d] < best) {
+/* --------------------------------------------------
+   PB CALCULATION
+-------------------------------------------------- */
+function updatePBs(){
+    dists.forEach(d=>{
+        let best = Infinity, meta="";
+        entries.forEach(e=>{
+            if(e.times[d]!==null && e.times[d] < best){
                 best = e.times[d];
-                bestMeta = `${formatDate(e.date)} • ${e.location}`;
+                meta = `${formatDate(e.date)} • ${e.location}`;
             }
         });
 
         let tile = document.getElementById("pb"+d);
-        let timeBox = tile.querySelector(".time");
-        let metaBox = tile.querySelector(".meta");
-
-        if (best === Infinity) {
-            timeBox.textContent = "--";
-            metaBox.textContent = "";
-        } else {
-            timeBox.textContent = best + "s";
-            metaBox.textContent = bestMeta;
-        }
+        tile.querySelector(".time").textContent = best===Infinity ? "--" : best+"s";
+        tile.querySelector(".meta").textContent = best===Infinity ? "" : meta;
     });
 }
 
-/* =======================================================
-   ENTRY LIST RENDER
-======================================================= */
-function renderEntries() {
-    entryList.innerHTML = "";
-
-    entries.forEach(e => {
+/* --------------------------------------------------
+   RENDER ENTRIES
+-------------------------------------------------- */
+function renderEntries(){
+    entryList.innerHTML="";
+    entries.forEach(e=>{
         let div = document.createElement("div");
-        div.className = "entryCard";
+        div.className="entryCard";
 
         let html = `<strong>${e.location}</strong><br>${formatDate(e.date)}<br><br>`;
-
-        dists.forEach(d => {
-            if (e.times[d] !== null) {
-                html += `${d}m: ${e.times[d]}s<br>`;
-            }
+        dists.forEach(d=>{
+            if(e.times[d]!==null) html+=`${d}m: ${e.times[d]}s<br>`;
         });
 
         div.innerHTML = html;
@@ -395,12 +350,38 @@ function renderEntries() {
     });
 }
 
-/* =======================================================
-   DATE FORMAT (Option A — “Feb 12, 2025”)
-======================================================= */
-function formatDate(val) {
-    let d = new Date(val);
-    return d.toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric" });
+/* --------------------------------------------------
+   UNDO LAST ENTRY
+-------------------------------------------------- */
+function undoLastEntry(){
+    if(entries.length === 0){
+        alert("No entries to undo.");
+        return;
+    }
+    entries.pop();
+    updatePBs();
+    renderEntries();
+}
+
+/* --------------------------------------------------
+   RESET EVERYTHING
+-------------------------------------------------- */
+function resetAll(){
+    if(!confirm("Reset all entries?")) return;
+
+    entries = [];
+    updatePBs();
+    renderEntries();
+}
+
+/* --------------------------------------------------
+   DATE FORMAT: Option A (Feb 12, 2025)
+-------------------------------------------------- */
+function formatDate(d){
+    let dt = new Date(d);
+    return dt.toLocaleDateString("en-US", {
+        month:"short", day:"numeric", year:"numeric"
+    });
 }
 
 </script>
