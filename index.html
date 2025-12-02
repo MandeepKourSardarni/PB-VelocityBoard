@@ -99,31 +99,42 @@
     </div>
 
     <!-- ================= ADD ENTRY MODAL ================= -->
-    <div id="addEntryModal" class="modal hiddenModal">
-        <div class="modalContent">
-            <h2>Add Race Entry</h2>
+    <!-- ============================================================
+     ADD ENTRY MODAL — FULLSCREEN WITH MULTI-DISTANCE INPUT
+============================================================ -->
+<div id="addEntryModal" class="modal hiddenModal">
 
-            <label>Location</label>
-            <input id="entryLocationInput" class="textInput" placeholder="Enter location">
+    <div class="modalContentFull">
 
-            <label>Date</label>
-            <input id="entryDateInput" type="date" class="textInput">
+        <h2 class="modalTitle">Add Race Entry</h2>
 
-            <label>Distance (e.g., 400, 500, 777)</label>
-            <input id="entryDistanceInput" class="textInput" placeholder="Distance in meters">
+        <!-- Location -->
+        <label class="inputLabel">Location</label>
+        <input id="entryLocationInput" class="inputField" type="text" placeholder="e.g., Brampton">
 
-            <label>Time (seconds)</label>
-            <input id="entryTimeInput" class="textInput" placeholder="Time in seconds">
+        <!-- Date -->
+        <label class="inputLabel" style="margin-top:12px;">Race Date</label>
+        <input id="entryDateInput" class="inputField" type="date">
 
-            <div class="modalBtns">
-                <button class="primaryBtn" onclick="saveNewEntry()">Save</button>
-                <button class="secondaryBtn" onclick="closeAddEntryModal()">Cancel</button>
-            </div>
+        <hr class="modalDivider">
+
+        <!-- MULTI-DISTANCE AREA -->
+        <div id="distanceRowsContainer"></div>
+
+        <button class="secondaryBtn" onclick="addDistanceRow()">➕ Add Another Distance</button>
+
+        <div class="modalActions">
+            <button class="primaryBtn" onclick="saveMultiDistanceEntry()">Save Entry</button>
+            <button class="dangerBtn" onclick="closeAddEntryModal()">Cancel</button>
         </div>
+
     </div>
+</div>
+
 
     <!-- Toast Notification -->
     <div id="toast"></div>
 
 </body>
 </html>
+
