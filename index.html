@@ -1,320 +1,89 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>PB VelocityBoard 3.1</title>
-
-<!-- Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<!-- Confetti -->
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<title>PB Test</title>
 
 <style>
-    body {
-        margin: 0;
-        background: linear-gradient(135deg, #012a72, #018c8c);
-        font-family: "Segoe UI", sans-serif;
-        color: white;
-    }
-
-    h2 {
-        margin: 10px 0 5px 15px;
-        font-size: 18px;
-        color: #39ffec;
-    }
-
-    /* ===== Athlete Setup Screen ===== */
-
-    #profileSetup {
-        padding: 30px;
-        text-align: center;
-        display: none;
-    }
-
-    #profileSetup input {
-        width: 80%;
-        padding: 10px;
-        margin: 10px 0;
-        background: rgba(0,0,0,0.5);
-        border: 1px solid #39ffec;
-        border-radius: 6px;
-        color: white;
-        font-size: 16px;
-    }
-
-    #profileSetup button {
-        background: #39ffec;
-        color: black;
-        padding: 12px 20px;
-        border: none;
-        border-radius: 8px;
-        font-size: 16px;
-        margin-top: 15px;
-        cursor: pointer;
-        font-weight: bold;
-    }
-
-    /* ===== Header ===== */
-    #header {
-        padding: 20px;
-        text-align: center;
-        font-size: 18px;
-        color: #39ffec;
-        font-weight: bold;
-        text-shadow: 0 0 8px #39ffec;
-        display: none;
-    }
-
-    /* ===== PB Tiles ===== */
-    #pbTiles {
-        display: none;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 10px;
-        padding: 10px;
-    }
-
-    .tile {
-        background: rgba(0,0,0,0.4);
-        border: 2px solid #39ffec;
-        border-radius: 12px;
-        padding: 12px;
-        text-align: center;
-        font-size: 14px;
-        font-weight: bold;
-        box-shadow: 0 0 10px rgba(57,255,236,0.4);
-    }
-
-    .tile-value {
-        font-size: 18px;
-        margin-top: 4px;
-        color: white;
-    }
-
-    /* ===== Tabs ===== */
-    #tabs {
-        position: fixed;
-        bottom: 0;
-        width: 100%;
-        background: rgba(0,0,0,0.7);
-        display: none;
-        justify-content: space-around;
-        padding: 12px 0;
-        border-top: 2px solid #39ffec;
-    }
-
-    .tabBtn {
-        color: #cffff9;
-        font-size: 14px;
-        text-align: center;
-        cursor: pointer;
-    }
-
-    .tabBtn.active {
-        color: #39ffec;
-        font-weight: bold;
-    }
-
-    /* ===== Pages ===== */
-    .page {
-        display: none;
-        padding-bottom: 80px;
-    }
-
-    .page.active {
-        display: block;
-    }
-
-    /* ===== Cards ===== */
-    .card {
-        background: rgba(0,0,0,0.45);
-        margin: 12px;
-        padding: 12px;
-        border-radius: 12px;
-        border: 1px solid #39ffec;
-        box-shadow: 0 0 10px rgba(57,255,236,0.3);
-    }
-
-    .pbMark {
-        color: #39ff14;
-        font-weight: bold;
-    }
-
-    button {
-        background: #39ffec;
-        color: black;
-        border: none;
-        padding: 8px 14px;
-        border-radius: 6px;
-        margin: 5px;
-        cursor: pointer;
-        font-weight: bold;
-    }
-
-    /* Add Entry Button */
-    #addEntryBtn {
-        margin: 20px;
-        width: calc(100% - 40px);
-        padding: 12px;
-        border-radius: 8px;
-        font-size: 16px;
-    }
-
-    /* Trend Chart Area */
-    #trendCharts canvas {
-        margin: 20px auto;
-        max-width: 90%;
-    }
-
-    /* Settings Inputs */
-    #settingsPage input {
-        width: 80%;
-        padding: 10px;
-        margin: 10px;
-        background: rgba(0,0,0,0.5);
-        border: 1px solid #39ffec;
-        border-radius: 6px;
-        color: white;
-    }
+body { font-family: Arial; padding: 20px; }
+#app { display: none; }
+.card { padding: 10px; margin: 10px 0; border: 1px solid #000; }
 </style>
+
 </head>
 <body>
 
-<!-- ATHLETE SETUP SCREEN -->
-<div id="profileSetup">
+<!-- ATHLETE SETUP -->
+<div id="setup">
     <h2>Enter Athlete Details</h2>
-    <input id="athleteNameInput" placeholder="Athlete Name" />
-    <input id="athleteAgeInput" placeholder="Age" type="number" />
-    <button onclick="saveAthlete()">Save & Continue</button>
+    <input id="name" placeholder="Name"><br><br>
+    <input id="age" placeholder="Age" type="number"><br><br>
+    <button onclick="saveAthlete()">Save</button>
 </div>
 
-<!-- HEADER -->
-<div id="header"></div>
+<!-- APP -->
+<div id="app">
+    <h2 id="header"></h2>
+    <button onclick="addRaceEntry()">+ Add Race Entry</button>
 
-<!-- PB TILES -->
-<h2 id="pbTitle" style="display:none;">Personal Bests</h2>
-<div id="pbTiles">
-    <div class="tile" id="pb400">400m<div class="tile-value">--</div></div>
-    <div class="tile" id="pb500">500m<div class="tile-value">--</div></div>
-    <div class="tile" id="pb800">800m<div class="tile-value">--</div></div>
-    <div class="tile" id="pb1000">1000m<div class="tile-value">--</div></div>
-    <div class="tile" id="pb1200">1200m<div class="tile-value">--</div></div>
-    <div class="tile" id="pb1500">1500m<div class="tile-value">--</div></div>
-</div>
-
-<!-- TABS -->
-<div id="tabs">
-    <div class="tabBtn active" data-page="homePage">🏠 Home</div>
-    <div class="tabBtn" data-page="trendPage">📈 Trends</div>
-    <div class="tabBtn" data-page="exportPage">📤 Export</div>
-    <div class="tabBtn" data-page="settingsPage">⚙ Settings</div>
-</div>
-
-<!-- HOME PAGE -->
-<div class="page active" id="homePage">
-    <button id="addEntryBtn">+ Add Race Entry</button>
     <div id="entries"></div>
-</div>
-
-<!-- TRENDS PAGE -->
-<div class="page" id="trendPage">
-    <h2>Performance Trends</h2>
-    <div id="trendCharts"></div>
-</div>
-
-<!-- EXPORT PAGE -->
-<div class="page" id="exportPage">
-    <h2>Export</h2>
-    <button onclick="downloadCSV()">⬇ Download CSV</button>
-</div>
-
-<!-- SETTINGS PAGE -->
-<div class="page" id="settingsPage">
-    <h2>Edit Athlete Details</h2>
-    <input id="editName" placeholder="Name" />
-    <input id="editAge" placeholder="Age" type="number" />
-    <button onclick="updateAthlete()">Save Changes</button>
 </div>
 
 <script>
 let entries = [];
-const distances = [400,500,800,1000,1200,1500];
-
-function showProfileSetup(){
-    document.getElementById("profileSetup").style.display="block";
-}
-
-function showApp(){
-    document.getElementById("profileSetup").style.display="none";
-    document.getElementById("header").style.display="block";
-    document.getElementById("tabs").style.display="flex";
-    document.getElementById("pbTitle").style.display="block";
-    document.getElementById("pbTiles").style.display="grid";
-}
 
 function saveAthlete(){
-    let name = document.getElementById("athleteNameInput").value.trim();
-    let age  = document.getElementById("athleteAgeInput").value.trim();
+    let n = document.getElementById("name").value.trim();
+    let a = document.getElementById("age").value.trim();
 
-    if(!name || !age){
-        alert("Please enter name and age.");
+    if(!n || !a){ alert("Enter both"); return; }
+
+    localStorage.setItem("athName", n);
+    localStorage.setItem("athAge", a);
+
+    loadAthlete();
+}
+
+function loadAthlete(){
+    let n = localStorage.getItem("athName");
+    let a = localStorage.getItem("athAge");
+
+    if(n){
+        document.getElementById("setup").style.display = "none";
+        document.getElementById("app").style.display = "block";
+        document.getElementById("header").innerHTML = n + " — Age " + a;
+    }
+}
+
+function addRaceEntry(){
+    let loc = prompt("Location?");
+    let date = prompt("Date?");
+    let time = prompt("400m time?");
+
+    if(!loc || !date || !time){
+        alert("Enter all fields");
         return;
     }
 
-    localStorage.setItem("athleteName", name);
-    localStorage.setItem("athleteAge", age);
-
-    updateHeader();
-    showApp();
+    entries.push({location: loc, date: date, time: time});
+    render();
 }
 
-function updateHeader(){
-    let name = localStorage.getItem("athleteName") || "Athlete";
-    let age  = localStorage.getItem("athleteAge")  || "--";
+function render(){
+    let box = document.getElementById("entries");
+    box.innerHTML = "";
 
-    document.getElementById("header").innerHTML = 
-        `🏅 ${name} — Age ${age}`;
-
-    document.getElementById("editName").value = name;
-    document.getElementById("editAge").value  = age;
+    entries.forEach(e=>{
+        box.innerHTML += `
+            <div class="card">
+                <strong>${e.location}</strong><br>
+                ${e.date}<br>
+                400m: ${e.time}s
+            </div>
+        `;
+    });
 }
 
-function updateAthlete(){
-    let name = document.getElementById("editName").value.trim();
-    let age  = document.getElementById("editAge").value.trim();
-
-    if(!name || !age){
-        alert("Enter both fields.");
-        return;
-    }
-
-    localStorage.setItem("athleteName", name);
-    localStorage.setItem("athleteAge", age);
-
-    updateHeader();
-    alert("Saved!");
-}
-
-if(!localStorage.getItem("athleteName")){
-    showProfileSetup();
-} else {
-    showApp();
-    updateHeader();
-}
-
-document.querySelectorAll(".tabBtn").forEach(tab=>{
-    tab.onclick = ()=>{
-        document.querySelectorAll(".tabBtn").forEach(t=>t.classList.remove("active"));
-        tab.classList.add("active");
-        document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
-
-        document.getElementById(tab.dataset.page).classList.add("active");
-    };
-});
-
-/* PREVIOUS FUNCTIONS FOR ENTRIES, PB, CHARTS REMAIN THE SAME… */
-/* If you want, I will now integrate all entry + PB + trend chart code under this new structure. */
-
+loadAthlete();
 </script>
 
 </body>
