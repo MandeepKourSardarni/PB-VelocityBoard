@@ -2,175 +2,128 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>PB VelocityBoard 5.0</title>
-
-    <!-- CSS -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PB VelocityBoard</title>
     <link rel="stylesheet" href="styles.css">
-
-    <!-- JS Utility Modules -->
     <script src="utils.js" defer></script>
-    <script src="theme.js" defer></script>
-    <script src="athletes.js" defer></script>
     <script src="app.js" defer></script>
-    <script src="charts.js" defer></script>
-    <script src="export.js" defer></script>
+    <script src="theme.js" defer></script>
 
-    <!-- External Libraries -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- NEW Analytics Engine -->
+    <script src="analytics.js" defer></script>
+
+    <!-- Export logic -->
+    <script src="export.js" defer></script>
 </head>
 
 <body>
 
-<!-- Dark overlay for background image -->
-<div class="overlay"></div>
+    <!-- Main Container -->
+    <div id="appContainer">
 
-<!-- ============================================================
-     ATHLETE SELECTION SCREEN
-============================================================ -->
-<div id="athleteSelectScreen" class="centerScreen">
-    <h1 class="appTitle">PB VelocityBoard</h1>
-    <h2>Select Athlete</h2>
+        <!-- ================= FIRST PAGE: SELECT ATHLETE ================= -->
+        <div id="athleteSelectScreen" class="screen activeScreen">
 
-    <div id="athleteList"></div>
+            <h1 class="mainTitle">PB VelocityBoard</h1>
+            <p class="mainSubtitle">Track • Improve • Celebrate</p>
 
-    <button id="addAthleteBtn" class="primaryBtn">+ Add Athlete</button>
-</div>
+            <div id="athleteList"></div>
 
-<!-- ============================================================
-     ADD ATHLETE MODAL
-============================================================ -->
-<div id="athleteModal" class="modal">
-    <div class="modalContent">
-        <h2>Add Athlete</h2>
-
-        <label>Name</label>
-        <input id="athleteNameInput">
-
-        <label>Age</label>
-        <input id="athleteAgeInput" type="number">
-
-        <label>Avatar Emoji</label>
-        <input id="athleteEmojiInput" placeholder="🧒 👦 👧 👨‍🦱">
-
-        <div class="modalActions">
-            <button onclick="closeAthleteModal()">Cancel</button>
-            <button onclick="saveNewAthlete()" class="primaryBtn">Save</button>
-        </div>
-    </div>
-</div>
-
-<!-- ============================================================
-     MAIN APP SCREEN
-============================================================ -->
-<div id="mainApp">
-
-    <!-- HEADER -->
-    <div id="headerBar">
-        <div id="currentAthleteName"></div>
-        <div id="currentAthleteAge"></div>
-    </div>
-
-    <!-- PB TILES -->
-    <h2 class="sectionTitle">Personal Bests</h2>
-    <div id="pbTiles"></div>
-
-    <!-- CUSTOM DISTANCES -->
-    <h2 class="sectionTitle">Other Distances</h2>
-    <div id="customPBList"></div>
-
-    <!-- CONTROL BUTTONS -->
-    <div id="controlButtons">
-        <button onclick="openEntryModal()">+ Add Entry</button>
-        <button onclick="undoLastEntry()">Undo Last</button>
-        <button onclick="resetAllData()">Reset All</button>
-    </div>
-
-    <!-- ENTRY HISTORY -->
-    <h2 class="sectionTitle">Race History</h2>
-    <div id="entryList"></div>
-
-</div>
-
-<!-- ============================================================
-     ENTRY MODAL
-============================================================ -->
-<div id="entryModal" class="modal">
-    <div class="modalContent largeModal">
-
-        <h2>Add/Edit Race Entry</h2>
-
-        <label>Location</label>
-        <input id="entryLocation">
-
-        <label>Date</label>
-        <input id="entryDate" type="date">
-
-        <!-- Time Inputs (Two-column layout) -->
-        <div class="gridTwo">
-            <div>
-                <label>400m</label>
-                <input id="t400">
-            </div>
-            <div>
-                <label>500m</label>
-                <input id="t500">
-            </div>
-
-            <div>
-                <label>800m</label>
-                <input id="t800">
-            </div>
-            <div>
-                <label>1000m</label>
-                <input id="t1000">
-            </div>
-
-            <div>
-                <label>1200m</label>
-                <input id="t1200">
-            </div>
-            <div>
-                <label>1500m</label>
-                <input id="t1500">
-            </div>
+            <button class="primaryBtn addAthleteBtn" onclick="openAddAthleteModal()">
+                ➕ Add Athlete
+            </button>
         </div>
 
-        <!-- Custom Distance Input -->
-        <h3>Add Custom Distance</h3>
-        <div class="gridTwo">
-            <div>
-                <label>Distance (e.g., 777)</label>
-                <input id="customDistanceInput">
-            </div>
-            <div>
-                <label>Time</label>
-                <input id="customDistanceTime">
-            </div>
+        <!-- ================= HOME TAB ================= -->
+        <div id="homeTab" class="screen hiddenScreen">
+            <h2 class="screenTitle">Home</h2>
+            <div id="pbTilesContainer"></div>
+
+            <button class="primaryBtn" onclick="openAddEntryModal()">
+                ➕ Add Race Entry
+            </button>
+
+            <div id="entriesContainer"></div>
         </div>
 
-        <div class="modalActions">
-            <button onclick="closeEntryModal()">Cancel</button>
-            <button onclick="saveEntry()" class="primaryBtn">Save</button>
+        <!-- ================= SETTINGS TAB ================= -->
+        <div id="settingsTab" class="screen hiddenScreen">
+            <h2 class="screenTitle">Settings</h2>
+
+            <div id="athleteSettingsSection"></div>
+
+            <button class="dangerBtn" onclick="resetAllData()">
+                Reset Everything
+            </button>
+        </div>
+
+        <!-- ================= ANALYTICS TAB (NEW) ================= -->
+        <div id="analyticsTab" class="screen hiddenScreen">
+            <h2 class="screenTitle">Analytics</h2>
+            <div id="analyticsCardsContainer"></div>
+        </div>
+
+        <!-- ================= EXPORT TAB ================= -->
+        <div id="exportTab" class="screen hiddenScreen">
+            <h2 class="screenTitle">Export</h2>
+        </div>
+
+        <!-- ================= BOTTOM NAVIGATION ================= -->
+        <div id="bottomNav">
+            <button onclick="switchTab('homeTab')" class="navBtn">🏠<br>Home</button>
+            <button onclick="switchTab('settingsTab')" class="navBtn">⚙️<br>Settings</button>
+            <button onclick="switchTab('analyticsTab')" class="navBtn">📊<br>Analytics</button>
+            <button onclick="switchTab('exportTab')" class="navBtn">📤<br>Export</button>
         </div>
     </div>
-</div>
 
-<!-- ============================================================
-     BOTTOM NAVIGATION TABS
-============================================================ -->
-<div id="bottomTabs">
-    <div class="tab activeTab" data-tab="homeTab">🏠<br>Home</div>
-    <div class="tab" data-tab="settingsTab">⚙️<br>Settings</div>
-    <div class="tab" data-tab="trendsTab">📈<br>Trends</div>
-    <div class="tab" data-tab="exportTab">📤<br>Export</div>
-</div>
+    <!-- ================= ADD ATHLETE MODAL ================= -->
+    <div id="addAthleteModal" class="modal hiddenModal">
+        <div class="modalContent">
+            <h2>Add Athlete</h2>
 
-<!-- TAB CONTENTS -->
-<div id="homeTab" class="tabPage activePage"></div>
-<div id="settingsTab" class="tabPage"></div>
-<div id="trendsTab" class="tabPage"></div>
-<div id="exportTab" class="tabPage"></div>
+            <label class="modalLabel">Athlete Name</label>
+            <input id="athleteNameInput" class="textInput" placeholder="Enter athlete name">
+
+            <label class="modalLabel">Age</label>
+            <input id="athleteAgeInput" type="number" class="textInput" placeholder="Age">
+
+            <label class="modalLabel">Profile Emoji (optional)</label>
+            <input id="athleteEmojiInput" class="textInput" placeholder="Choose a fun emoji! ⭐ (optional)">
+
+            <div class="modalBtns">
+                <button class="primaryBtn" onclick="saveNewAthlete()">Save</button>
+                <button class="secondaryBtn" onclick="closeAddAthleteModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= ADD ENTRY MODAL ================= -->
+    <div id="addEntryModal" class="modal hiddenModal">
+        <div class="modalContent">
+            <h2>Add Race Entry</h2>
+
+            <label>Location</label>
+            <input id="entryLocationInput" class="textInput" placeholder="Enter location">
+
+            <label>Date</label>
+            <input id="entryDateInput" type="date" class="textInput">
+
+            <label>Distance (e.g., 400, 500, 777)</label>
+            <input id="entryDistanceInput" class="textInput" placeholder="Distance in meters">
+
+            <label>Time (seconds)</label>
+            <input id="entryTimeInput" class="textInput" placeholder="Time in seconds">
+
+            <div class="modalBtns">
+                <button class="primaryBtn" onclick="saveNewEntry()">Save</button>
+                <button class="secondaryBtn" onclick="closeAddEntryModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast"></div>
 
 </body>
 </html>
