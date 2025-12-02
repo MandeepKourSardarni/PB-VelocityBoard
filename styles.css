@@ -393,8 +393,13 @@ body {
 
 /* Modal actions */
 .modalActions {
-    margin-top: 16px;
+    position: sticky;
+    bottom: 0;
+    background: rgba(20,20,20,0.9);
+    padding: 12px 0;
+    backdrop-filter: blur(10px);
     display: flex;
     flex-direction: column;
     gap: 10px;
 }
+
