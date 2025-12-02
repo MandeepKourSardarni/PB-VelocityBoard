@@ -1,133 +1,92 @@
 /* ============================================================
-   THEME.JS — Light / Dark Mode System for PB VelocityBoard 5.0
+   THEME.JS — PB VelocityBoard 6.0
+   Handles: Tab switching, screen visibility, page flow
 ============================================================ */
 
-let currentTheme = "dark"; // default
-
 
 /* ------------------------------------------------------------
-   LOAD THEME FROM STORAGE
+   SWITCH BETWEEN TABS
 ------------------------------------------------------------ */
-function loadTheme() {
-    const saved = localStorage.getItem("PB_VB_THEME");
-    if (saved) currentTheme = saved;
+function switchTab(tabName) {
+    // Hide all screens
+    document.querySelectorAll(".screen").forEach(screen => {
+        screen.classList.add("hiddenScreen");
+        screen.classList.remove("activeScreen");
+    });
 
-    applyTheme();
-}
+    // Show selected tab
+    const tab = document.getElementById(tabName);
+    tab.classList.remove("hiddenScreen");
+    tab.classList.add("activeScreen");
 
+    // Trigger tab-specific updates
+    if (tabName === "homeTab") {
+        renderPBTiles();
+        renderEntries();
+    }
 
-/* ------------------------------------------------------------
-   APPLY THEME (change CSS classes)
------------------------------------------------------------- */
-function applyTheme() {
-    if (currentTheme === "light") {
-        document.body.classList.add("light");
-    } else {
-        document.body.classList.remove("light");
+    if (tabName === "settingsTab") {
+        renderSettingsScreen();
+    }
+
+    if (tabName === "analyticsTab") {
+        renderAnalyticsTab();
+    }
+
+    if (tabName === "exportTab") {
+        renderExportTab();
     }
 }
 
 
 /* ------------------------------------------------------------
-   TOGGLE THEME
+   OPEN HOME TAB AFTER ATHLETE SELECTED
 ------------------------------------------------------------ */
-function toggleTheme() {
-    currentTheme = (currentTheme === "dark") ? "light" : "dark";
+function goToHomeScreen() {
+    document.getElementById("athleteSelectScreen").classList.add("hiddenScreen");
+    document.getElementById("athleteSelectScreen").classList.remove("activeScreen");
 
-    applyTheme();
-    saveTheme();
+    switchTab("homeTab");
+}
 
-    showToast(`Switched to ${currentTheme} mode`);
+/* ------------------------------------------------------------
+   RETURN TO ATHLETE SELECTION (OPTIONAL FEATURE)
+------------------------------------------------------------ */
+function backToAthleteSelect() {
+    // Hide all tabs
+    document.querySelectorAll(".screen").forEach(s => {
+        s.classList.add("hiddenScreen");
+        s.classList.remove("activeScreen");
+    });
+
+    // Show main selection screen
+    const sel = document.getElementById("athleteSelectScreen");
+    sel.classList.remove("hiddenScreen");
+    sel.classList.add("activeScreen");
 }
 
 
 /* ------------------------------------------------------------
-   SAVE THEME
+   INITIALIZE FIRST SCREEN
 ------------------------------------------------------------ */
-function saveTheme() {
-    localStorage.setItem("PB_VB_THEME", currentTheme);
-}
-
-
-/* ------------------------------------------------------------
-   RENDER THEME SETTING UI (inside Settings tab)
------------------------------------------------------------- */
-function renderSettingsTab() {
-    const settingsTab = document.getElementById("settingsTab");
-
-    settingsTab.innerHTML = `
-        <h2 style="color:#2ee7e7;">Settings</h2>
-        
-        <div style="margin-top:20px;">
-            <strong>Theme</strong><br>
-            <button onclick="toggleTheme()" class="primaryBtn" style="margin-top:8px;">
-                Switch to ${currentTheme === "dark" ? "Light" : "Dark"} Mode
-            </button>
-        </div>
-
-        <div style="margin-top:35px;">
-            <strong>Current Athlete</strong><br>
-            <button onclick="switchAthleteScreen()" class="secondaryBtn" style="margin-top:8px;">
-                Change Athlete
-            </button>
-        </div>
-    `;
-}
-
-
-/* ------------------------------------------------------------
-   GO BACK TO ATHLETE SELECTION SCREEN
------------------------------------------------------------- */
-function switchAthleteScreen() {
-    document.getElementById("mainApp").style.display = "none";
-    document.getElementById("athleteSelectScreen").style.display = "block";
-}
-
-
-/* ------------------------------------------------------------
-   INITIALIZE WHEN PAGE LOADS
------------------------------------------------------------- */
-window.addEventListener("load", () => {
-    loadTheme();
-    setupTabNavigation();
+document.addEventListener("DOMContentLoaded", () => {
+    // Athlete selection screen is shown first
+    switchToAthleteSelect();
 });
 
 
 /* ------------------------------------------------------------
-   TAB NAVIGATION LOGIC
+   HANDLER — START AT ATHLETE SELECT SCREEN
 ------------------------------------------------------------ */
-function setupTabNavigation() {
-    const tabs = document.querySelectorAll(".tab");
-    const pages = document.querySelectorAll(".tabPage");
-
-    tabs.forEach(tab => {
-        tab.addEventListener("click", () => {
-            // Remove active class from all tabs
-            tabs.forEach(t => t.classList.remove("activeTab"));
-            tab.classList.add("activeTab");
-
-            const target = tab.getAttribute("data-tab");
-
-            pages.forEach(page => {
-                if (page.id === target) {
-                    page.classList.add("activePage");
-
-                    if (target === "settingsTab") {
-                        renderSettingsTab();
-                    }
-
-                    if (target === "trendsTab") {
-                        renderTrendsTab();
-                    }
-
-                    if (target === "exportTab") {
-                        renderExportTab();
-                    }
-
-                } else {
-                    page.classList.remove("activePage");
-                }
-            });
-        });
+function switchToAthleteSelect() {
+    document.querySelectorAll(".screen").forEach(s => {
+       s.classList.add("hiddenScreen");
+       s.classList.remove("activeScreen");
     });
+
+    const sel = document.getElementById("athleteSelectScreen");
+    sel.classList.remove("hiddenScreen");
+    sel.classList.add("activeScreen");
+
+    renderAthleteList();
 }
