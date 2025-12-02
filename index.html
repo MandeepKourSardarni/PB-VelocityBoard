@@ -37,17 +37,24 @@
             </button>
         </div>
 
-        <!-- ================= HOME TAB ================= -->
+
+            <!-- ================= HOME TAB ================= -->
         <div id="homeTab" class="screen hiddenScreen">
             <h2 class="screenTitle">Home</h2>
-            <div id="pbTilesContainer"></div>
 
+    <!-- Athlete Switcher (Glass Dropdown) -->
+            <div class="athleteSwitcherContainer">
+                <select id="athleteSwitcher" class="athleteSwitcher" onchange="switchAthleteFromDropdown()">
+            <!-- Options will be injected by JS -->
+                </select>
+            </div>
+            <div id="pbTilesContainer"></div>
             <button class="primaryBtn" onclick="openAddEntryModal()">
                 ➕ Add Race Entry
             </button>
-
             <div id="entriesContainer"></div>
         </div>
+
 
         <!-- ================= SETTINGS TAB ================= -->
         <div id="settingsTab" class="screen hiddenScreen">
@@ -140,6 +147,7 @@
 
 </body>
 </html>
+
 
 
 
