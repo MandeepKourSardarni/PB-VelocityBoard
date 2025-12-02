@@ -354,3 +354,41 @@ function resetAllData() {
     saveData();
     switchToAthleteSelect();
 }
+
+
+
+/* ============================================================
+   ATHLETE SWITCHER (GLASS DROPDOWN)
+============================================================ */
+
+function populateAthleteDropdown() {
+    const select = document.getElementById("athleteSwitcher");
+    if (!select) return;
+
+    select.innerHTML = "";
+
+    athletes.forEach(a => {
+        const option = document.createElement("option");
+        option.value = a.id;
+        option.textContent = `${a.emoji || "🏃"} ${a.name}`;
+        select.appendChild(option);
+    });
+
+    // Auto-select current athlete
+    if (currentAthleteID) {
+        select.value = currentAthleteID;
+    }
+}
+
+function switchAthleteFromDropdown() {
+    const selectedID = document.getElementById("athleteSwitcher").value;
+
+    currentAthleteID = selectedID;
+    saveData();
+
+    // Reload all Home content
+    renderPBTiles();
+    renderEntries();
+    renderAnalyticsTab();
+    renderSettingsScreen();
+}
