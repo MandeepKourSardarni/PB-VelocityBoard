@@ -1,261 +1,149 @@
 /* ============================================================
-   APP.JS — Core Logic for PB VelocityBoard 5.0
+   APP.JS — PB VelocityBoard 6.0
+   Core Logic: Athletes, Entries, PBs, UI Rendering
 ============================================================ */
 
+
+/* ------------------------------------------------------------
+   GLOBAL STATE
+------------------------------------------------------------ */
+let athletes = JSON.parse(localStorage.getItem("pbv_athletes")) || [];
 let currentAthleteID = null;
-let currentEditingEntryID = null;
+
 
 /* ------------------------------------------------------------
-   LOAD ATHLETE DATA ON SELECTION
+   SAVE & LOAD STORAGE
 ------------------------------------------------------------ */
-function loadAthlete(athleteID) {
-    currentAthleteID = athleteID;
+function saveData() {
+    localStorage.setItem("pbv_athletes", JSON.stringify(athletes));
+}
 
-    const athlete = getAthlete(athleteID);
-    if (!athlete) return;
-
-    document.getElementById("athleteSelectScreen").style.display = "none";
-    document.getElementById("mainApp").style.display = "block";
-
-    document.getElementById("currentAthleteName").textContent =
-        athlete.name + " " + (athlete.emoji || "");
-    document.getElementById("currentAthleteAge").textContent =
-        "Age: " + athlete.age;
-
-    renderAll();
+function getAthlete(id) {
+    return athletes.find(a => a.id === id);
 }
 
 
 /* ------------------------------------------------------------
-   RENDER EVERYTHING (PB tiles, entries, custom PBs)
+   RENDER ATHLETE LIST (FIRST SCREEN)
 ------------------------------------------------------------ */
-function renderAll() {
-    const athlete = getAthlete(currentAthleteID);
-    if (!athlete) return;
+function renderAthleteList() {
+    const list = document.getElementById("athleteList");
+    list.innerHTML = "";
 
-    updatePBTiles(athlete);
-    updateCustomPBs(athlete);
-    renderEntries(athlete);
-}
+    if (athletes.length === 0) {
+        list.innerHTML = `<p style="text-align:center; opacity:0.8;">No athletes added yet.</p>`;
+        return;
+    }
 
-
-/* ------------------------------------------------------------
-   UPDATE PB TILES (Official distances)
------------------------------------------------------------- */
-function updatePBTiles(athlete) {
-    const container = document.getElementById("pbTiles");
-    container.innerHTML = "";
-
-    const officialDistances = ["400", "500", "800", "1000", "1200", "1500"];
-
-    officialDistances.forEach(dist => {
-        const pb = athlete.pb[dist];
-
-        const tile = document.createElement("div");
-        tile.className = "pbTile";
-        tile.id = `pb-${dist}`;
-
-        tile.innerHTML = `
-            <div class="distance">${dist}m</div>
-            <div class="time">${pb ? pb.time + "s" : "--"}</div>
-            <div class="meta">
-                ${pb ? pb.location : ""}<br>
-                ${pb ? formatDate(pb.date) : ""}
-            </div>
-        `;
-
-        container.appendChild(tile);
-    });
-}
-
-
-/* ------------------------------------------------------------
-   UPDATE CUSTOM DISTANCE PBs
------------------------------------------------------------- */
-function updateCustomPBs(athlete) {
-    const container = document.getElementById("customPBList");
-    container.innerHTML = "";
-
-    Object.keys(athlete.pb).forEach(dist => {
-        if (["400","500","800","1000","1200","1500"].includes(dist)) return;
-
-        const pb = athlete.pb[dist];
-
-        const item = document.createElement("div");
-        item.className = "customPBItem";
-
-        item.innerHTML = `
-            <strong>${dist}m:</strong> ${pb.time}s<br>
-            <small>${pb.location} • ${formatDate(pb.date)}</small>
-        `;
-
-        container.appendChild(item);
-    });
-}
-
-
-/* ------------------------------------------------------------
-   RENDER ENTRY HISTORY
------------------------------------------------------------- */
-function renderEntries(athlete) {
-    const container = document.getElementById("entryList");
-    container.innerHTML = "";
-
-    athlete.entries.forEach(entry => {
+    athletes.forEach(a => {
         const card = document.createElement("div");
-        card.className = "entryCard";
+        card.className = "athleteCard";
+        card.onclick = () => selectAthlete(a.id);
 
         card.innerHTML = `
-            <div><strong>${entry.location}</strong></div>
-            <div>${formatDate(entry.date)}</div>
-            <div>${formatEntryTimes(entry)}</div>
-
-            <div class="editDeleteRow">
-                <span class="editBtn" onclick="editEntry('${entry.id}')">✏️ Edit</span>
-                <span class="deleteBtn" onclick="deleteEntry('${entry.id}')">🗑 Delete</span>
-            </div>
+            <div class="athleteEmoji">${a.emoji || "🏃"}</div>
+            <div class="athleteName">${a.name}</div>
         `;
 
-        container.appendChild(card);
+        list.appendChild(card);
     });
 }
 
 
-/* Helper to format times into readable text */
-function formatEntryTimes(entry) {
-    let html = "";
+/* ------------------------------------------------------------
+   SELECT ATHLETE → ENTER APP
+------------------------------------------------------------ */
+function selectAthlete(id) {
+    currentAthleteID = id;
+    goToHomeScreen();
 
-    Object.keys(entry.times).forEach(dist => {
-        html += `${dist}m: ${entry.times[dist]}s<br>`;
-    });
-
-    return html;
+    renderPBTiles();
+    renderEntries();
 }
 
 
 /* ------------------------------------------------------------
-   OPEN ENTRY MODAL
+   CREATE NEW ATHLETE
 ------------------------------------------------------------ */
-function openEntryModal(editID = null) {
-    currentEditingEntryID = editID;
-
-    document.getElementById("entryModal").style.display = "flex";
-
-    if (editID) {
-        loadEntryIntoModal(editID);
-    } else {
-        clearEntryModal();
-    }
+function openAddAthleteModal() {
+    document.getElementById("addAthleteModal").classList.remove("hiddenModal");
 }
 
-function closeEntryModal() {
-    document.getElementById("entryModal").style.display = "none";
+function closeAddAthleteModal() {
+    document.getElementById("addAthleteModal").classList.add("hiddenModal");
 }
 
+function saveNewAthlete() {
+    const name = document.getElementById("athleteNameInput").value.trim();
+    const age = document.getElementById("athleteAgeInput").value.trim();
+    const emoji = document.getElementById("athleteEmojiInput").value.trim();
 
-/* ------------------------------------------------------------
-   CLEAR MODAL FOR NEW ENTRY
------------------------------------------------------------- */
-function clearEntryModal() {
-    document.getElementById("entryLocation").value = "";
-    document.getElementById("entryDate").value = "";
-
-    ["400","500","800","1000","1200","1500"].forEach(id => {
-        document.getElementById("t" + id).value = "";
-    });
-
-    document.getElementById("customDistanceInput").value = "";
-    document.getElementById("customDistanceTime").value = "";
-}
-
-
-/* ------------------------------------------------------------
-   LOAD EXISTING ENTRY FOR EDITING
------------------------------------------------------------- */
-function loadEntryIntoModal(entryID) {
-    const athlete = getAthlete(currentAthleteID);
-    const entry = athlete.entries.find(e => e.id === entryID);
-
-    if (!entry) return;
-
-    document.getElementById("entryLocation").value = entry.location;
-    document.getElementById("entryDate").value = entry.date;
-
-    ["400","500","800","1000","1200","1500"].forEach(dist => {
-        document.getElementById("t" + dist).value =
-            entry.times[dist] ?? "";
-    });
-
-    // Load custom distances (only first one)
-    const custom = Object.keys(entry.times).find(k =>
-        !["400","500","800","1000","1200","1500"].includes(k)
-    );
-
-    if (custom) {
-        document.getElementById("customDistanceInput").value = custom;
-        document.getElementById("customDistanceTime").value = entry.times[custom];
-    }
-}
-
-
-/* ------------------------------------------------------------
-   SAVE ENTRY (NEW OR EDIT)
------------------------------------------------------------- */
-function saveEntry() {
-    const athlete = getAthlete(currentAthleteID);
-
-    const location = document.getElementById("entryLocation").value.trim();
-    const date = document.getElementById("entryDate").value;
-
-    if (!location || !date) {
-        showToast("Enter location and date.");
+    if (!name || !age) {
+        showToast("Fill required fields");
         return;
     }
 
-    const times = {};
-    ["400","500","800","1000","1200","1500"].forEach(dist => {
-        const val = parseTime(document.getElementById("t" + dist).value);
-        if (val !== null) times[dist] = val;
-    });
+    const newAthlete = {
+        id: uid(),
+        name,
+        age,
+        emoji: emoji || "🏃",
+        entries: [],
+        pb: {}  // PB will populate dynamically
+    };
 
-    const customDist = document.getElementById("customDistanceInput").value.trim();
-    const customTime = parseTime(document.getElementById("customDistanceTime").value);
+    athletes.push(newAthlete);
+    saveData();
 
-    if (customDist && customTime !== null) {
-        times[customDist] = customTime;
-    }
+    closeAddAthleteModal();
+    renderAthleteList();
+}
 
-    if (Object.keys(times).length === 0) {
-        showToast("Enter at least one time.");
+
+/* ------------------------------------------------------------
+   ADD RACE ENTRY
+------------------------------------------------------------ */
+function openAddEntryModal() {
+    document.getElementById("addEntryModal").classList.remove("hiddenModal");
+}
+
+function closeAddEntryModal() {
+    document.getElementById("addEntryModal").classList.add("hiddenModal");
+}
+
+function saveNewEntry() {
+    const athlete = getAthlete(currentAthleteID);
+    if (!athlete) return;
+
+    const location = document.getElementById("entryLocationInput").value.trim();
+    const date = document.getElementById("entryDateInput").value;
+    const dist = document.getElementById("entryDistanceInput").value.trim();
+    const time = parseFloat(document.getElementById("entryTimeInput").value.trim());
+
+    if (!location || !date || !dist || !time) {
+        showToast("Fill all fields");
         return;
     }
 
-    if (currentEditingEntryID) {
-        // EDIT existing entry
-        const entry = athlete.entries.find(e => e.id === currentEditingEntryID);
-        entry.location = location;
-        entry.date = date;
-        entry.times = times;
+    const entry = {
+        id: uid(),
+        location,
+        date,
+        times: { [dist]: time }
+    };
 
-        showToast("Entry updated.");
-        currentEditingEntryID = null;
-    } else {
-        // NEW ENTRY
-        const newEntry = {
-            id: generateID(),
-            location,
-            date,
-            times
-        };
-
-        athlete.entries.push(newEntry);
-    }
+    athlete.entries.push(entry);
 
     updatePBs(athlete);
+    saveData();
 
-    saveAthletes();
-    renderAll();
-    closeEntryModal();
+    closeAddEntryModal();
+
+    renderEntries();
+    renderPBTiles();
+    renderAnalyticsTab();
+
+    showToast("Entry added");
 }
 
 
@@ -263,91 +151,139 @@ function saveEntry() {
    UPDATE PERSONAL BESTS
 ------------------------------------------------------------ */
 function updatePBs(athlete) {
-    athlete.pb = {};
+    const pbMap = {};
 
     athlete.entries.forEach(entry => {
         Object.keys(entry.times).forEach(dist => {
-            const time = entry.times[dist];
+            const t = Number(entry.times[dist]);
 
-            if (!athlete.pb[dist] || time < athlete.pb[dist].time) {
-                athlete.pb[dist] = {
-                    time,
+            if (!pbMap[dist] || t < pbMap[dist].time) {
+                pbMap[dist] = {
+                    time: t,
                     location: entry.location,
                     date: entry.date
                 };
             }
         });
     });
+
+    athlete.pb = pbMap;
 }
 
 
 /* ------------------------------------------------------------
-   EDIT ENTRY
+   RENDER PB TILES
 ------------------------------------------------------------ */
-function editEntry(entryID) {
-    openEntryModal(entryID);
-}
-
-
-/* ------------------------------------------------------------
-   DELETE ENTRY
------------------------------------------------------------- */
-function deleteEntry(entryID) {
+function renderPBTiles() {
     const athlete = getAthlete(currentAthleteID);
+    const container = document.getElementById("homeTab");
+    const tilesBox = document.getElementById("pbTilesContainer");
 
-    athlete.entries = athlete.entries.filter(e => e.id !== entryID);
+    tilesBox.innerHTML = "";
 
-    updatePBs(athlete);
-    saveAthletes();
-    renderAll();
-
-    showToast("Entry deleted.");
-}
-
-
-/* ------------------------------------------------------------
-   UNDO LAST ENTRY
------------------------------------------------------------- */
-function undoLastEntry() {
-    const athlete = getAthlete(currentAthleteID);
-
-    if (athlete.entries.length === 0) {
-        showToast("No entries to undo.");
+    if (!athlete || Object.keys(athlete.pb).length === 0) {
+        tilesBox.innerHTML = `<p style="text-align:center; opacity:0.7;">No PBs yet.</p>`;
         return;
     }
 
-    athlete.entries.pop();
-    updatePBs(athlete);
-    saveAthletes();
-    renderAll();
+    const distances = sortDistances(Object.keys(athlete.pb));
 
-    showToast("Last entry undone.");
+    distances.forEach(dist => {
+        const pb = athlete.pb[dist];
+
+        const tile = document.createElement("div");
+        tile.className = "entryCard";  // visually good for PB tiles
+
+        tile.innerHTML = `
+            <div style="font-size:18px; font-weight:600;">${dist}m PB</div>
+            <div style="font-size:24px; margin:6px 0;">${pb.time}s</div>
+            <div style="opacity:0.7; font-size:14px;">
+                ${pb.location} — ${formatDate(pb.date)}
+            </div>
+        `;
+
+        tilesBox.appendChild(tile);
+    });
 }
 
 
 /* ------------------------------------------------------------
-   RESET ALL DATA FOR ATHLETE
+   RENDER ENTRIES LIST
+------------------------------------------------------------ */
+function renderEntries() {
+    const athlete = getAthlete(currentAthleteID);
+    const container = document.getElementById("entriesContainer");
+
+    container.innerHTML = "";
+
+    if (!athlete || athlete.entries.length === 0) {
+        container.innerHTML = `<p style="text-align:center; opacity:0.7;">No entries yet.</p>`;
+        return;
+    }
+
+    const sorted = athlete.entries.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    sorted.forEach(entry => {
+        const card = document.createElement("div");
+        card.className = "entryCard";
+
+        const distances = Object.keys(entry.times)
+            .map(d => `${d}m: ${entry.times[d]}s`)
+            .join(" • ");
+
+        card.innerHTML = `
+            <div><strong>${formatDate(entry.date)}</strong> — ${entry.location}</div>
+            <div style="margin-top:6px;">${distances}</div>
+        `;
+
+        container.appendChild(card);
+    });
+}
+
+
+/* ------------------------------------------------------------
+   SETTINGS TAB RENDER
+------------------------------------------------------------ */
+function renderSettingsScreen() {
+    const athlete = getAthlete(currentAthleteID);
+    const section = document.getElementById("athleteSettingsSection");
+    section.innerHTML = "";
+
+    if (!athlete) return;
+
+    section.innerHTML = `
+        <div class="entryCard">
+            <div><strong>Name:</strong> ${athlete.name}</div>
+            <div><strong>Age:</strong> ${athlete.age}</div>
+            <div><strong>Emoji:</strong> ${athlete.emoji}</div>
+
+            <button class="dangerBtn" onclick="deleteAthlete()">Delete Athlete</button>
+        </div>
+    `;
+}
+
+
+/* ------------------------------------------------------------
+   DELETE ATHLETE
+------------------------------------------------------------ */
+function deleteAthlete() {
+    if (!confirm("Delete this athlete and all data?")) return;
+
+    athletes = athletes.filter(a => a.id !== currentAthleteID);
+    saveData();
+
+    currentAthleteID = null;
+    switchToAthleteSelect();
+}
+
+
+/* ------------------------------------------------------------
+   RESET ALL DATA
 ------------------------------------------------------------ */
 function resetAllData() {
-    if (!confirm("Are you sure? This deletes all entries and PBs.")) return;
+    if (!confirm("Reset ALL data? This cannot be undone.")) return;
 
-    const athlete = getAthlete(currentAthleteID);
-
-    athlete.entries = [];
-    athlete.pb = {};
-
-    saveAthletes();
-    renderAll();
-
-    showToast("All data reset.");
+    athletes = [];
+    saveData();
+    switchToAthleteSelect();
 }
-
-
-/* ------------------------------------------------------------
-   INIT: Show Athlete Select Screen
------------------------------------------------------------- */
-window.onload = function () {
-    document.getElementById("mainApp").style.display = "none";
-    loadAthleteListUI();
-};
-
