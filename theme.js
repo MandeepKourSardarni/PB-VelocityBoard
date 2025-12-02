@@ -12,6 +12,10 @@ function switchTab(tabName) {
     document.querySelectorAll(".screen").forEach(screen => {
         screen.classList.add("hiddenScreen");
         screen.classList.remove("activeScreen");
+       if (tabName === "homeTab") {
+          populateAthleteDropdown();
+}
+
     });
 
     // Show selected tab
