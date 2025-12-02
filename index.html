@@ -1,237 +1,104 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<title>PB VelocityBoard 4.1</title>
+    <meta charset="UTF-8">
+    <title>PB VelocityBoard 5.0</title>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- CSS -->
+    <link rel="stylesheet" href="styles.css">
 
-<style>
-/* --------------------------------------------------
-   GLOBAL THEME + BACKGROUND IMAGE
--------------------------------------------------- */
-body {
-    margin: 0;
-    font-family: "Segoe UI", sans-serif;
-    background: url('https://raw.githubusercontent.com/MandeepKourSardarni/PB-VelocityBoard/main/IMAGE.jpg') 
-                no-repeat center center fixed;
-    background-size: cover;
-    color: white;
-    overflow-x: hidden;
-}
+    <!-- JS Utility Modules -->
+    <script src="utils.js" defer></script>
+    <script src="theme.js" defer></script>
+    <script src="athletes.js" defer></script>
+    <script src="app.js" defer></script>
+    <script src="charts.js" defer></script>
+    <script src="export.js" defer></script>
 
-.overlay {
-    position: fixed;
-    top:0; left:0; width:100%; height:100%;
-    background: rgba(0,0,0,0.55);
-    z-index: -1;
-}
-
-/* Headings */
-h2 {
-    margin: 15px;
-    color: #2ee7e7;
-    font-size: 20px;
-}
-
-/* Buttons */
-button {
-    background: #2ee7e7;
-    color: #00152f;
-    padding: 10px 18px;
-    border-radius: 8px;
-    font-weight: bold;
-    border: none;
-    cursor: pointer;
-}
-button:hover {
-    background: #57f1f1;
-}
-
-/* ============================================================
-   ATHLETE SETUP
-============================================================ */
-#athleteSetup {
-    text-align: center;
-    padding: 40px 20px;
-}
-
-#athleteSetup input {
-    width: 75%;
-    padding: 12px;
-    margin: 10px 0;
-    border-radius: 8px;
-    border: 1px solid #2ee7e7;
-    background: rgba(0,0,0,0.45);
-    color: white;
-    font-size: 16px;
-}
-
-#mainApp { display: none; }
-
-/* ============================================================
-   HEADER BAR
-============================================================ */
-#headerBar {
-    text-align: center;
-    padding: 20px 10px;
-    background: rgba(0,0,0,0.45);
-    font-size: 18px;
-    color: #2ee7e7;
-    font-weight: bold;
-}
-
-/* ============================================================
-   PB TILES
-============================================================ */
-#pbTiles {
-    margin: 10px;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-}
-
-.pbTile {
-    background: rgba(0,0,0,0.45);
-    padding: 12px;
-    border-radius: 12px;
-    text-align: center;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-}
-
-.pbTile .distance {
-    font-size: 16px;
-    color: #2ee7e7;
-}
-
-.pbTile .time {
-    font-size: 26px;
-    margin: 6px 0;
-    font-weight: bold;
-}
-
-.pbTile .meta {
-    font-size: 12px;
-    opacity: 0.8;
-}
-
-/* ============================================================
-   CONTROL BUTTONS UNDER PB TILES
-============================================================ */
-#controlButtons {
-    text-align: center;
-    margin: 15px;
-}
-
-#controlButtons button {
-    margin: 5px;
-    padding: 10px 15px;
-}
-
-/* ============================================================
-   ENTRY CARDS
-============================================================ */
-.entryCard {
-    background: rgba(0,0,0,0.45);
-    padding: 15px;
-    margin: 12px;
-    border-radius: 10px;
-    border-left: 4px solid #2ee7e7;
-}
-
-/* ============================================================
-   POP-UP MODAL
-============================================================ */
-#entryModal {
-    display: none;
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: rgba(0,0,0,0.65);
-    justify-content: center;
-    align-items: center;
-}
-
-#modalBox {
-    background: #032862;
-    padding: 20px;
-    width: 92%;
-    max-width: 520px;
-    border-radius: 12px;
-}
-
-.modalGrid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-top: 12px;
-}
-
-#modalBox input {
-    width: 100%;
-    padding: 10px;
-    background: #053067;
-    border: 1px solid #2ee7e7;
-    border-radius: 6px;
-    color: white;
-}
-
-.modalActions {
-    text-align: right;
-    margin-top: 18px;
-}
-
-</style>
+    <!-- External Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
+
 <body>
 
+<!-- Dark overlay for background image -->
 <div class="overlay"></div>
 
-<!-- =======================================================
-     ATHLETE SETUP
-======================================================= -->
-<div id="athleteSetup">
-    <h2>Enter Athlete Details</h2>
-    <input id="athName" placeholder="Athlete Name">
-    <input id="athAge" type="number" placeholder="Age">
-    <br><br>
-    <button onclick="saveAthlete()">Save & Continue</button>
+<!-- ============================================================
+     ATHLETE SELECTION SCREEN
+============================================================ -->
+<div id="athleteSelectScreen" class="centerScreen">
+    <h1 class="appTitle">PB VelocityBoard</h1>
+    <h2>Select Athlete</h2>
+
+    <div id="athleteList"></div>
+
+    <button id="addAthleteBtn" class="primaryBtn">+ Add Athlete</button>
 </div>
 
-<!-- =======================================================
-     MAIN APPLICATION
-======================================================= -->
+<!-- ============================================================
+     ADD ATHLETE MODAL
+============================================================ -->
+<div id="athleteModal" class="modal">
+    <div class="modalContent">
+        <h2>Add Athlete</h2>
+
+        <label>Name</label>
+        <input id="athleteNameInput">
+
+        <label>Age</label>
+        <input id="athleteAgeInput" type="number">
+
+        <label>Avatar Emoji</label>
+        <input id="athleteEmojiInput" placeholder="🧒 👦 👧 👨‍🦱">
+
+        <div class="modalActions">
+            <button onclick="closeAthleteModal()">Cancel</button>
+            <button onclick="saveNewAthlete()" class="primaryBtn">Save</button>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================
+     MAIN APP SCREEN
+============================================================ -->
 <div id="mainApp">
 
-    <div id="headerBar"></div>
-
-    <h2>Personal Bests</h2>
-    <div id="pbTiles">
-        <div class="pbTile" id="pb400"><div class="distance">400m</div><div class="time">--</div><div class="meta"></div></div>
-        <div class="pbTile" id="pb500"><div class="distance">500m</div><div class="time">--</div><div class="meta"></div></div>
-        <div class="pbTile" id="pb800"><div class="distance">800m</div><div class="time">--</div><div class="meta"></div></div>
-        <div class="pbTile" id="pb1000"><div class="distance">1000m</div><div class="time">--</div><div class="meta"></div></div>
-        <div class="pbTile" id="pb1200"><div class="distance">1200m</div><div class="time">--</div><div class="meta"></div></div>
-        <div class="pbTile" id="pb1500"><div class="distance">1500m</div><div class="time">--</div><div class="meta"></div></div>
+    <!-- HEADER -->
+    <div id="headerBar">
+        <div id="currentAthleteName"></div>
+        <div id="currentAthleteAge"></div>
     </div>
 
-    <!-- BUTTONS UNDER PB TILES -->
+    <!-- PB TILES -->
+    <h2 class="sectionTitle">Personal Bests</h2>
+    <div id="pbTiles"></div>
+
+    <!-- CUSTOM DISTANCES -->
+    <h2 class="sectionTitle">Other Distances</h2>
+    <div id="customPBList"></div>
+
+    <!-- CONTROL BUTTONS -->
     <div id="controlButtons">
         <button onclick="openEntryModal()">+ Add Entry</button>
         <button onclick="undoLastEntry()">Undo Last</button>
-        <button onclick="resetAll()">Reset All</button>
+        <button onclick="resetAllData()">Reset All</button>
     </div>
 
+    <!-- ENTRY HISTORY -->
+    <h2 class="sectionTitle">Race History</h2>
     <div id="entryList"></div>
+
 </div>
 
-<!-- =======================================================
-     ADD ENTRY MODAL
-======================================================= -->
-<div id="entryModal">
-    <div id="modalBox">
-        <h2>Add Race Entry</h2>
+<!-- ============================================================
+     ENTRY MODAL
+============================================================ -->
+<div id="entryModal" class="modal">
+    <div class="modalContent largeModal">
+
+        <h2>Add/Edit Race Entry</h2>
 
         <label>Location</label>
         <input id="entryLocation">
@@ -239,152 +106,71 @@ button:hover {
         <label>Date</label>
         <input id="entryDate" type="date">
 
-        <div class="modalGrid">
-            <div><label>400m</label><input id="t400"></div>
-            <div><label>500m</label><input id="t500"></div>
-            <div><label>800m</label><input id="t800"></div>
-            <div><label>1000m</label><input id="t1000"></div>
-            <div><label>1200m</label><input id="t1200"></div>
-            <div><label>1500m</label><input id="t1500"></div>
+        <!-- Time Inputs (Two-column layout) -->
+        <div class="gridTwo">
+            <div>
+                <label>400m</label>
+                <input id="t400">
+            </div>
+            <div>
+                <label>500m</label>
+                <input id="t500">
+            </div>
+
+            <div>
+                <label>800m</label>
+                <input id="t800">
+            </div>
+            <div>
+                <label>1000m</label>
+                <input id="t1000">
+            </div>
+
+            <div>
+                <label>1200m</label>
+                <input id="t1200">
+            </div>
+            <div>
+                <label>1500m</label>
+                <input id="t1500">
+            </div>
+        </div>
+
+        <!-- Custom Distance Input -->
+        <h3>Add Custom Distance</h3>
+        <div class="gridTwo">
+            <div>
+                <label>Distance (e.g., 777)</label>
+                <input id="customDistanceInput">
+            </div>
+            <div>
+                <label>Time</label>
+                <input id="customDistanceTime">
+            </div>
         </div>
 
         <div class="modalActions">
             <button onclick="closeEntryModal()">Cancel</button>
-            <button onclick="saveEntry()">Save</button>
+            <button onclick="saveEntry()" class="primaryBtn">Save</button>
         </div>
-
     </div>
 </div>
 
-<script>
-let entries = [];
-const dists = [400,500,800,1000,1200,1500];
+<!-- ============================================================
+     BOTTOM NAVIGATION TABS
+============================================================ -->
+<div id="bottomTabs">
+    <div class="tab activeTab" data-tab="homeTab">🏠<br>Home</div>
+    <div class="tab" data-tab="settingsTab">⚙️<br>Settings</div>
+    <div class="tab" data-tab="trendsTab">📈<br>Trends</div>
+    <div class="tab" data-tab="exportTab">📤<br>Export</div>
+</div>
 
-/* --------------------------------------------------
-   ATHLETE SYSTEM
--------------------------------------------------- */
-function saveAthlete(){
-    let n = athName.value.trim();
-    let a = athAge.value.trim();
-    if(!n || !a){ alert("Enter both fields"); return; }
-
-    localStorage.setItem("athName", n);
-    localStorage.setItem("athAge", a);
-    loadAthlete();
-}
-
-function loadAthlete(){
-    let n = localStorage.getItem("athName");
-    let a = localStorage.getItem("athAge");
-
-    if(n){
-        athleteSetup.style.display = "none";
-        mainApp.style.display = "block";
-        headerBar.innerHTML = `${n} — Age ${a}`;
-    }
-}
-loadAthlete();
-
-/* --------------------------------------------------
-   MODAL
--------------------------------------------------- */
-function openEntryModal(){ entryModal.style.display = "flex"; }
-function closeEntryModal(){ entryModal.style.display = "none"; }
-
-/* --------------------------------------------------
-   SAVE ENTRY
--------------------------------------------------- */
-function saveEntry(){
-    let loc = entryLocation.value.trim();
-    let date = entryDate.value.trim();
-    if(!loc || !date){ alert("Enter location & date"); return; }
-
-    let e = { location:loc, date:date, times:{} };
-
-    dists.forEach(d=>{
-        let v = document.getElementById("t"+d).value.trim();
-        e.times[d] = v ? parseFloat(v) : null;
-    });
-
-    entries.push(e);
-    updatePBs();
-    renderEntries();
-    closeEntryModal();
-}
-
-/* --------------------------------------------------
-   PB CALCULATION
--------------------------------------------------- */
-function updatePBs(){
-    dists.forEach(d=>{
-        let best = Infinity, meta="";
-        entries.forEach(e=>{
-            if(e.times[d]!==null && e.times[d] < best){
-                best = e.times[d];
-                meta = `${formatDate(e.date)} • ${e.location}`;
-            }
-        });
-
-        let tile = document.getElementById("pb"+d);
-        tile.querySelector(".time").textContent = best===Infinity ? "--" : best+"s";
-        tile.querySelector(".meta").textContent = best===Infinity ? "" : meta;
-    });
-}
-
-/* --------------------------------------------------
-   RENDER ENTRIES
--------------------------------------------------- */
-function renderEntries(){
-    entryList.innerHTML="";
-    entries.forEach(e=>{
-        let div = document.createElement("div");
-        div.className="entryCard";
-
-        let html = `<strong>${e.location}</strong><br>${formatDate(e.date)}<br><br>`;
-        dists.forEach(d=>{
-            if(e.times[d]!==null) html+=`${d}m: ${e.times[d]}s<br>`;
-        });
-
-        div.innerHTML = html;
-        entryList.appendChild(div);
-    });
-}
-
-/* --------------------------------------------------
-   UNDO LAST ENTRY
--------------------------------------------------- */
-function undoLastEntry(){
-    if(entries.length === 0){
-        alert("No entries to undo.");
-        return;
-    }
-    entries.pop();
-    updatePBs();
-    renderEntries();
-}
-
-/* --------------------------------------------------
-   RESET EVERYTHING
--------------------------------------------------- */
-function resetAll(){
-    if(!confirm("Reset all entries?")) return;
-
-    entries = [];
-    updatePBs();
-    renderEntries();
-}
-
-/* --------------------------------------------------
-   DATE FORMAT: Option A (Feb 12, 2025)
--------------------------------------------------- */
-function formatDate(d){
-    let dt = new Date(d);
-    return dt.toLocaleDateString("en-US", {
-        month:"short", day:"numeric", year:"numeric"
-    });
-}
-
-</script>
+<!-- TAB CONTENTS -->
+<div id="homeTab" class="tabPage activePage"></div>
+<div id="settingsTab" class="tabPage"></div>
+<div id="trendsTab" class="tabPage"></div>
+<div id="exportTab" class="tabPage"></div>
 
 </body>
 </html>
