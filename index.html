@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PB VelocityBoard 3.0</title>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Confetti -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        background: linear-gradient(135deg, #012a72, #018c8c);
+        /* OPTIONAL BACKGROUND IMAGE —
+           Uncomment next 3 lines and insert your GitHub image URL */
+        /*
+        background: url('YOUR_GITHUB_IMAGE_URL') no-repeat center center fixed;
+        background-size: cover;
+        */
+        font-family: "Segoe UI", sans-serif;
+        color: white;
+        overflow-x: hidden;
+    }
+
+    h2 {
+        margin: 10px 0 5px 15px;
+        font-size: 18px;
+        letter-spacing: 1px;
+        color: #39ffec;
+    }
+
+    /* HEADER */
+    #header {
+        padding: 20px;
+        text-align: center;
+        font-size: 18px;
+        color: #39ffec;
+        font-weight: bold;
+        text-shadow: 0 0 8px #39ffec;
+    }
+
+    /* PB TILES (3-PER-ROW) */
+    #pbTiles {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        padding: 10px 10px 20px 10px;
+    }
+
+    .tile {
+        background: rgba(0,0,0,0.4);
+        border: 2px solid #39ffec;
+        border-radius: 12px;
+        padding: 12px;
+        text-align: center;
+        font-size: 14px;
+        font-weight: bold;
+        color: #cffff9;
+        transition: 0.3s;
+        box-shadow: 0 0 10px rgba(57,255,236,0.4);
+    }
+
+    .tile-value {
+        font-size: 18px;
+        margin-top: 4px;
+        color: white;
+        text-shadow: 0 0 6px #39ffec;
+    }
+
+    .tile.pbGlow {
+        animation: glowPB 1.5s infinite alternate;
+    }
+
+    @keyframes glowPB {
+        0% { box-shadow: 0 0 10px #39ff14; border-color: #39ff14; }
+        100% { box-shadow: 0 0 25px #39ff14; border-color: #39ff14; }
+    }
+
+    /* TABS */
+    #tabs {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        background: rgba(0,0,0,0.7);
+        display: flex;
+        justify-content: space-around;
+        padding: 12px 0;
+        border-top: 2px solid #39ffec;
+    }
+
+    .tabBtn {
+        text-align: center;
+        color: #cffff9;
+        font-size: 14px;
+        cursor: pointer;
+    }
+
+    .tabBtn.active {
+        color: #39ffec;
+        font-weight: bold;
+        text-shadow: 0 0 6px #39ffec;
+    }
+
+    /* PAGES */
+    .page {
+        display: none;
+        padding-bottom: 80px;
+    }
+
+    .page.active {
+        display: block;
+    }
+
+    /* CARDS */
+    .card {
+        background: rgba(0,0,0,0.45);
+        margin: 12px;
+        padding: 12px;
+        border-radius: 12px;
+        border: 1px solid #39ffec;
+        box-shadow: 0 0 10px rgba(57,255,236,0.3);
+    }
+
+    .pbMark {
+        color: #39ff14;
+        font-weight: bold;
+        text-shadow: 0 0 6px #39ff14;
+    }
+
+    button {
+        background: #39ffec;
+        color: black;
+        border: none;
+        padding: 8px 14px;
+        border-radius: 6px;
+        margin: 5px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+
+    button:hover {
+        transform: scale(1.05);
+    }
+
+    #trendCharts canvas {
+        margin: 20px auto;
+        max-width: 90%;
+    }
+
+    /* FORM BUTTONS */
+    #addEntryBtn {
+        margin: 20px;
+        width: calc(100% - 40px);
+        font-size: 16px;
+        border-radius: 8px;
+    }
+</style>
+</head>
+<body>
+
+<div id="header">🏅 PB VelocityBoard — Samavir Singh Siddharth</div>
+
+<!-- PB SUMMARY TILES -->
+<h2>Personal Bests</h2>
+<div id="pbTiles">
+    <div class="tile" id="pb400">400m<div class="tile-value">--</div></div>
+    <div class="tile" id="pb500">500m<div class="tile-value">--</div></div>
+    <div class="tile" id="pb800">800m<div class="tile-value">--</div></div>
+    <div class="tile" id="pb1000">1000m<div class="tile-value">--</div></div>
+    <div class="tile" id="pb1200">1200m<div class="tile-value">--</div></div>
+    <div class="tile" id="pb1500">1500m<div class="tile-value">--</div></div>
+</div>
+
+<!-- TABS -->
+<div id="tabs">
+    <div class="tabBtn active" data-page="homePage">🏠 Home</div>
+    <div class="tabBtn" data-page="trendPage">📈 Trends</div>
+    <div class="tabBtn" data-page="exportPage">📤 Export</div>
+    <div class="tabBtn" data-page="settingsPage">⚙ Settings</div>
+</div>
+
+<!-- HOME PAGE -->
+<div class="page active" id="homePage">
+    <button id="addEntryBtn">+ Add Race Entry</button>
+    <div id="entries"></div>
+</div>
+
+<!-- TRENDS PAGE -->
+<div class="page" id="trendPage">
+    <h2>Performance Trends</h2>
+    <div id="trendCharts"></div>
+</div>
+
+<!-- EXPORT PAGE -->
+<div class="page" id="exportPage">
+    <h2>Export</h2>
+    <button onclick="downloadCSV()">⬇ Download CSV</button>
+</div>
+
+<!-- SETTINGS PAGE -->
+<div class="page" id="settingsPage">
+    <h2>Settings</h2>
+    <p style="margin-left:15px;">Athlete Name: Samavir Singh Siddharth</p>
+</div>
+
+<script>
+let entries = [];
+let charts = {};
+const distances = [400,500,800,1000,1200,1500];
+
+/* LOAD FROM STORAGE */
+if(localStorage.getItem("pbEntries")){
+    entries = JSON.parse(localStorage.getItem("pbEntries"));
+}
+renderEntries();
+updatePBs();
+
+/* SWITCH TABS */
+document.querySelectorAll(".tabBtn").forEach(tab=>{
+    tab.onclick = ()=>{
+        document.querySelectorAll(".tabBtn").forEach(t=>t.classList.remove("active"));
+        tab.classList.add("active");
+
+        document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+        document.getElementById(tab.dataset.page).classList.add("active");
+
+        if(tab.dataset.page === "trendPage"){
+            renderCharts();
+        }
+    };
+});
+
+/* ADD NEW ENTRY */
+document.getElementById("addEntryBtn").onclick = ()=>{
+    let entry = {
+        id: Date.now(),
+        location: prompt("Location?"),
+        date: prompt("Date (YYYY-MM-DD)?"),
+        times: {}
+    };
+
+    distances.forEach(d=>{
+        let val = prompt(`${d}m time (sec)? Leave blank if not raced.`);
+        entry.times[d] = val ? parseFloat(val) : null;
+    });
+
+    entries.push(entry);
+    save();
+    renderEntries();
+    updatePBs();
+};
+
+/* RENDER CARDS */
+function renderEntries(){
+    let container = document.getElementById("entries");
+    container.innerHTML = "";
+
+    entries.forEach(e=>{
+        let card = document.createElement("div");
+        card.className = "card";
+
+        let html = `<strong>🏟 ${e.location}</strong><br>
+                    📅 ${e.date}<br><br>`;
+
+        distances.forEach(d=>{
+            if(e.times[d] !== null){
+                let isPB = isThisPB(d, e.times[d]);
+                html += `${d}m: ${e.times[d]}s ${isPB ? "<span class='pbMark'>PB</span>" : ""}<br>`;
+            }
+        });
+
+        html += `<br><button onclick="showChart(${e.id})">📈 View Trend</button>`;
+
+        card.innerHTML = html;
+        container.appendChild(card);
+    });
+}
+
+/* CHECK PB */
+function isThisPB(distance, time){
+    let best = Infinity;
+    entries.forEach(e=>{
+        if(e.times[distance] !== null && e.times[distance] < best){
+            best = e.times[distance];
+        }
+    });
+    return time === best;
+}
+
+/* UPDATE PB TILES */
+function updatePBs(){
+    distances.forEach(d=>{
+        let best = Infinity;
+
+        entries.forEach(e=>{
+            if(e.times[d] && e.times[d] < best){
+                best = e.times[d];
+            }
+        });
+
+        let tile = document.getElementById("pb"+d);
+        tile.querySelector(".tile-value").textContent = best === Infinity ? "--" : best+"s";
+
+        tile.classList.remove("pbGlow");
+        if(best !== Infinity){
+            tile.classList.add("pbGlow");
+        }
+    });
+
+    localStorage.setItem("pbEntries", JSON.stringify(entries));
+}
+
+/* CONFETTI */
+function confettiBurst(){
+    confetti({
+        particleCount: 100,
+        spread: 70,
+        origin:{y:0.6}
+    });
+}
+
+/* SAVE */
+function save(){
+    localStorage.setItem("pbEntries", JSON.stringify(entries));
+}
+
+/* CSV EXPORT */
+function downloadCSV(){
+    let rows = [["Location","Date","400","500","800","1000","1200","1500"]];
+    entries.forEach(e=>{
+        rows.push([
+            e.location,
+            e.date,
+            e.times[400] || "",
+            e.times[500] || "",
+            e.times[800] || "",
+            e.times[1000] || "",
+            e.times[1200] || "",
+            e.times[1500] || ""
+        ]);
+    });
+
+    let csv = rows.map(r=>r.join(",")).join("\n");
+    let blob = new Blob([csv],{type:"text/csv"});
+    let a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "PB_VelocityBoard.csv";
+    a.click();
+}
+
+/* SHOW CHART FOR AN ENTRY */
+function showChart(entryId){
+    document.querySelector(".tabBtn[data-page='trendPage']").click();
+}
+
+/* RENDER ALL CHARTS */
+function renderCharts(){
+    let container = document.getElementById("trendCharts");
+    container.innerHTML = "";
+
+    distances.forEach(distance=>{
+        let canvas = document.createElement("canvas");
+        container.appendChild(canvas);
+
+        let labels = [];
+        let values = [];
+
+        entries.forEach(e=>{
+            if(e.times[distance] !== null){
+                labels.push(e.date);
+                values.push(e.times[distance]);
+            }
+        });
+
+        if(charts[distance]){
+            charts[distance].destroy();
+        }
+
+        charts[distance] = new Chart(canvas, {
+            type: "line",
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: distance+"m",
+                    data: values
+                }]
+            }
+        });
+    });
+}
+</script>
+
+</body>
+</html>
